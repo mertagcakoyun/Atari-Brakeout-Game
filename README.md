@@ -1,6 +1,6 @@
 # Atari-Brakeout-Game
 
-I developed "Breakout", one of the legendary Arcade games! 
+I developed "Brakeout", one of the legendary Arcade games! 
 ### How can you play? ###
 Just run the index.html file with your browser.
 
