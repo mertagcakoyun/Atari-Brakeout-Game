@@ -1,6 +1,6 @@
 (function () {
     drawTable();
-
+    var score = 0;
     var level = [
         '**************',
         '**************',
@@ -9,7 +9,7 @@
     ];
 
     var gameLoop;
-    var userLive = 3;
+    var userLife = 3;
     var gameSpeed = 20;
     var ballMovementSpeed = 3;
 
@@ -38,11 +38,13 @@
     function startGame() {
         resetBall();
         buildLevel();
-        createBricks();
+        createBricks(0);
         updateObjects();
     }
-
     function drawTable() {
+
+
+
         document.body.style.background = '#0E5CAD';
         document.body.style.font = '18px Orbitron';
         document.body.style.color = '#FFF';
@@ -60,6 +62,21 @@
         breakout.style.transform = 'translate(-50%, -50%)';
         breakout.style.background = '#000000';
 
+        var startBtn = document.createElement('div');
+        startBtn.id = 'startBtn'
+        startBtn.className = 'startBtn';
+        startBtn.style.position = "absolute";
+        startBtn.style.top = "48%"
+        startBtn.style.left = "45%"
+        startBtn.style.width = "fit-content";
+        startBtn.style.fontSize = '30px';
+        startBtn.style.color = "#000";
+        startBtn.style.background = "#FFF"
+        startBtn.style.cursor = 'pointer'
+        startBtn.innerHTML = 'START';
+        startBtn.onclick = start;
+        breakout.appendChild(startBtn)
+
         paddle.id = 'paddle';
         paddle.style.background = '#E80505';
         paddle.style.position = 'absolute';
@@ -72,8 +89,11 @@
         ball.style.borderRadius = '50%';
         ball.style.zIndex = '9';
 
+
+
         breakout.appendChild(paddle);
         breakout.appendChild(ball);
+
 
         document.body.appendChild(breakout);
     }
@@ -86,6 +106,26 @@
 
     function buildLevel() {
         var arena = document.getElementById('breakout');
+
+        var scoreBoard = document.createElement('p');
+        scoreBoard.id = 'scoreBoard'
+        scoreBoard.className = 'scoreBoard';
+        scoreBoard.style.position = 'absolute';
+        scoreBoard.style.right = '10px';
+        scoreBoard.style.top = '2px';
+        scoreBoard.style.fontSize = '15px';
+        scoreBoard.innerHTML = 'SCORE: 0';
+        breakout.appendChild(scoreBoard)
+
+        var life = document.createElement('p');
+        life.id = 'life'
+        life.className = 'scoreBoard';
+        life.style.position = 'absolute';
+        life.style.left = '10px';
+        life.style.top = '2px';
+        life.style.fontSize = '15px';
+        life.innerHTML = 'LIFE: ' + userLife;
+        breakout.appendChild(life)
 
         bricks = [];
 
@@ -103,7 +143,6 @@
                     top: bricksHeight * row + 60,
                     width: bricksWidth - bricksMargin * 2,
                     height: bricksHeight - bricksMargin * 2
-
                 });
             }
         }
@@ -115,26 +154,35 @@
         });
     }
 
-    function createBricks() {
+    function createBricks(score) {
         removeBricks();
 
         var arena = document.getElementById('breakout');
+        var board = document.getElementById('scoreBoard');
+        board.innerHTML = 'SCORE: ' + score
+        var isFinish = true;
 
         bricks.forEach(function (brick, index) {
+            if (brick.display != 'none') {
+                isFinish = false;
+            }
             var element = document.createElement('div');
-
             element.id = 'brick-' + index;
             element.className = 'brick';
             element.style.left = brick.left + 'px';
             element.style.top = brick.top + 'px';
             element.style.width = brick.width + 'px';
             element.style.height = brick.height + 'px';
+            element.style.display = brick.display;
             element.style.background = '#FFFFFF';
             element.style.position = 'absolute';
             element.style.boxShadow = '0 15px 20px 0px rgba(0,0,0,.4)';
 
             arena.appendChild(element)
         });
+        if (isFinish) {
+            restart();
+        }
     }
 
     function updateObjects() {
@@ -164,6 +212,7 @@
         document.querySelector('.ball').style.left = ball.left + 'px';
         document.querySelector('.ball').style.top = ball.top + 'px';
     }
+
 
     function movePaddle(clientX) {
         var arena = document.getElementById('breakout');
@@ -211,23 +260,21 @@
             && ball.left >= paddle.left
             && ball.left <= paddle.left + paddle.width
         ) {
-            //ball.speedLeft = ball.speedLeft * Math.cos(25);
-            //ball.speedTop = -ball.speedTop * Math.sin(40);
-            ball.speedLeft = ball.speedLeft
+            //ball.speedLeft = ball.speedLeft * Math.cos(20);
+            //ball.speedTop = -ball.speedTop * Math.sin(20);
             ball.speedTop = -ball.speedTop
         }
 
         if (ball.top + ball.height > paddle.top + paddle.height) {
-            userLive -= 1;
-            if (userLive >= 0) {
+            userLife -= 1;
+            if (userLife >= 0) {
 
-                console.log(userLive);
-                console.log("can gitti");
+
+                document.getElementById('life').innerHTML = 'LIFE: ' + userLife;
                 resetBall();
             }
             else {
-                console.log("Oyun Bitti")
-                stop();  /// OYUNU BİTİR
+                restart();
             }
         }
 
@@ -238,23 +285,40 @@
                 && ball.top <= brick.top + brick.height
                 && ball.left + ball.width >= brick.left
                 && ball.left <= brick.left + brick.width
-                && !brick.removed
             ) {
-
+                score += 10;
                 ball.speedTop = -ball.speedTop;
-                brick.top = "-100"
-                brick.left = "-100";
-                ball.speedTop += 1;
-                ball.speedLeft += 1;
+                brick.display = 'none'
+                brick.top = '-100'
+                brick.left = '-100'
+                ball.speedTop += 0.2;
+                ball.speedLeft += 0.2;
+                createBricks(score);
 
-                createBricks();
-                console.log(bricks[i]);
                 break;
             }
         }
     }
 
-
+    function restart() {
+        clearInterval(gameLoop);
+        var restart = document.createElement('div');
+        restart.id = 'restart'
+        restart.className = 'restart';
+        restart.style.position = "absolute";
+        restart.style.top = "48%"
+        restart.style.left = "45%"
+        restart.style.width = "fit-content";
+        restart.style.fontSize = '30px';
+        restart.style.color = "#000";
+        restart.style.background = "#FFF"
+        restart.style.cursor = 'pointer'
+        restart.innerHTML = 'RESTART';
+        restart.onclick = function () {
+            location.reload();
+        };
+        breakout.appendChild(restart)
+    }
 
     function setEvents() {
         document.addEventListener('mousemove', function (event) {
@@ -263,11 +327,11 @@
         document.addEventListener('keydown', function (event) {
             if (event.keyCode == 37) {
                 leftArrow = true;
-                console.log("left true")
+
             }
             else if (event.keyCode = 40) {
                 rightArrow = true;
-                console.log("right true")
+
             }
             movePaddleWithKeyboard();
         });
@@ -283,7 +347,6 @@
 
     }
     function movePaddleWithKeyboard() {
-
         if (rightArrow) {
             if (paddle.left + paddle.width <= 800) {
                 paddle.left += 20;
@@ -296,14 +359,19 @@
 
         }
     }
+
+
     function startGameLoop() {
         gameLoop = setInterval(function () {
             moveBall();
             updateObjects();
         }, gameSpeed);
     }
+    function start() {
+        document.getElementById("startBtn").style.display = "none";
+        setEvents();
+        startGame();
+        startGameLoop();
+    }
 
-    setEvents();
-    startGame();
-    startGameLoop();
 })();
